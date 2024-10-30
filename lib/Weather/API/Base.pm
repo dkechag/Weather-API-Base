@@ -167,9 +167,17 @@ Can convert from/to various units that are used in weather:
 
 =back
 
+Use the above units as string parameters. Example:
+
+  $result = convert_units('atm', 'mmHg', 1); # Will return 760 (mmHg per 1 atm)
+
+If you try to convert between non convertible units, the croak message will list
+the valid conversions from the 'from' units.
+
 Note that the Beaufort scale (C<Bft>) is an empirical scale that is usually used
-in whole numbers (converting to a range of +/- 0.5 Bft in other units), but the
-converter will actually give you the approximate floating point value.
+as whole numbers (converting to a range of +/- 0.5 Bft in other units), but the
+convert function will actually give you the approximate floating point value based
+on an accepted empirical function.
 
 =head2 C<ts_to_date>
 
@@ -374,7 +382,7 @@ sub convert_units {
 
 sub _kelvin {
     my $val  = shift;
-    my $mult = shift ? 1 : -1;
+    my $mult = shift() ? 1 : -1;
 
     return $val + $mult * 273.15;
 }
