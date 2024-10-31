@@ -25,7 +25,9 @@ my %WriteMakefileArgs = (
         'HTTP::Response'          => '0',
         'JSON'                    => '0'
     },
-    PREREQ_PM  => {},
+    PREREQ_PM  => {
+        'LWP::UserAgent' => '0',
+    },
     META_MERGE => {
         "meta-spec" => {version => 2},
         prereqs => {
