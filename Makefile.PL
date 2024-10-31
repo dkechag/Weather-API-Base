@@ -3,6 +3,12 @@ use strict;
 use warnings;
 use ExtUtils::MakeMaker;
 
+# Optional, except for cpancover, cpantesters etc.
+my $extra_test =
+  ( $ENV{EXTENDED_TESTING} || $ENV{AUTOMATED_TESTING} )
+  ? 'requires'
+  : 'recommends';
+
 my %WriteMakefileArgs = (
     NAME               => 'Weather::API::Base',
     AUTHOR             => q{Dimitrios Kechagias <dkechag@cpan.org>},
@@ -17,12 +23,23 @@ my %WriteMakefileArgs = (
         'Test2::V0'               => '0',
         'Test2::Tools::Exception' => '0',
         'HTTP::Response'          => '0',
-        'XML::Simple'             => '0',
         'JSON'                    => '0'
     },
     PREREQ_PM  => {},
     META_MERGE => {
         "meta-spec" => {version => 2},
+        prereqs => {
+            test => {
+                $extra_test => {
+                    'XML::Simple' => '0',
+                }
+            },
+            runtime => {
+                suggests => {
+                    'JSON' => '0',
+                }
+            }
+        },
         resources   => {
             repository => {
                 type => 'git',

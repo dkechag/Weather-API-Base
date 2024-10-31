@@ -70,9 +70,11 @@ subtest '_get_output' => sub {
     $content = '<product name="astro"></product>';
     $resp    = HTTP::Response->new(200, 'SUCCESS', undef, $content);
     $base->{output} = 'xml';
-    is({$base->_get_output(1, $resp)}, {name => 'astro'}, "XML output");
-    $base->{curl} = 1;
-    is({$base->_get_output(1, $content)}, {name => 'astro'}, "XML for curl");
+    if (eval "require XML::Simple;") {
+        is({$base->_get_output(1, $resp)}, {name => 'astro'}, "XML output");
+        $base->{curl} = 1;
+        is({$base->_get_output(1, $content)}, {name => 'astro'}, "XML for curl");
+    }
 };
 
 
