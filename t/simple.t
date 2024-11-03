@@ -45,35 +45,35 @@ subtest 'constructor' => sub {
 subtest '_get_output' => sub {
     my $content = '{"main":{"temp":29.48}}';
     my $resp    = HTTP::Response->new(200, 'SUCCESS', undef, $content);
-    is($base->_get_output(0, $resp), $content, "Got string output");
+    is($base->_get_output($resp), $content, "Got string output");
 
     $base->{output} = 'json';
     is(
-        {$base->_get_output(1, $resp)},
+        {$base->_get_output($resp, 1)},
         {main => {temp => 29.48}},
         "Got decoded JSON output"
     );
-    is($base->_get_output(0, $resp), $content, "Got string output");
+    is($base->_get_output($resp), $content, "Got string output");
 
     $base->{output} = 'png';
-    is({$base->_get_output(1, $resp)}, {data => $content}, "Other output");
+    is({$base->_get_output($resp, 1)}, {data => $content}, "Other output");
 
     $resp = HTTP::Response->new(401, 'Unauthorized', undef, '{}');
     is(
-        {$base->_get_output(1, $resp, 1)},
+        {$base->_get_output($resp, 1)},
         {error => $resp},
         "Error response in hash"
     );
-    is($base->_get_output(0, $resp), 'ERROR: 401 Unauthorized', "Error in string");
+    is($base->_get_output($resp), 'ERROR: 401 Unauthorized', "Error in string");
 
     $base->{error} = '';
     $content = '<product name="astro"></product>';
     $resp    = HTTP::Response->new(200, 'SUCCESS', undef, $content);
     $base->{output} = 'xml';
     if (eval "require XML::Simple;") {
-        is({$base->_get_output(1, $resp)}, {name => 'astro'}, "XML output");
+        is({$base->_get_output($resp, 1)}, {name => 'astro'}, "XML output");
         $base->{curl} = 1;
-        is({$base->_get_output(1, $content)}, {name => 'astro'}, "XML for curl");
+        is({$base->_get_output($content, 1)}, {name => 'astro'}, "XML for curl");
     }
 };
 

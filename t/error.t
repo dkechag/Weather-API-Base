@@ -32,7 +32,7 @@ subtest 'datetime_to_ts' => sub {
 subtest '_get_output' => sub {
     my $base = Weather::API::Base->new(error => 'die');
     my $resp = HTTP::Response->new(401, 'Unauthorized', undef, '{}');
-    like(dies {$base->_get_output(0, $resp)}, qr/401 Unauthorized/, "Dies with 401");
+    like(dies {$base->_get_output($resp)}, qr/401 Unauthorized/, "Dies with 401");
 };
 
 

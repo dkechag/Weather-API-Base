@@ -14,8 +14,8 @@ Weather::API::Base - Base/util module for Weather API clients
   # Convert a date to unix timestamp
   my $ts = datetime_to_ts('2024-01-12 13:46:40');
 
-  # Convert 10 mph to kph
-  my $result = convert_units('mph', 'kph', 10);
+  # Convert 30 degrees Celsius to Fahrenheit
+  my $result = convert_units('C', 'F', 30);
 
 
   ### Building a Weather API client
@@ -37,26 +37,25 @@ Weather::API::Base - Base/util module for Weather API clients
       return $self->_get_ua($url);
   }
 
-  # Getting scalar contents or data structure from response
+  # Getting the response contents as a scalar or decoded to a data structure
   sub get {
       my $self = shift;
       my $resp = shift;
 
-      return $self->_get_output(wantarray, $resp);
+      return $self->_get_output($resp, wantarray);
   }
 
 =head1 DESCRIPTION
 
 L<Weather::API::Base> is a base class for simple Perl Weather API clients. Apart
-from handling JSON/XML API responses, it offers useful utility functions.
+from handling JSON and XML API responses (L<JSON> and L<XML::Simple> required respectivelly),
+it offers utility functions for time and unit conversions, specifically useful for
+weather-related APIs.
 
-It was mainly created to make maintenance of L<Weather::OWM>, L<Weather::Astro7Timer>
-and L<Weather::WeatherKit> easier by factoring out common code.
-
-In the unlikely event that you'd like to base your own Weather or similar API module
-on it, look at those modules for more help on how to do it.
-
-It is more useful as a util module for the time and unit conversion functions.
+This module was mainly created to streamline maintenance of the L<Weather::OWM>,
+L<Weather::Astro7Timer> and L<Weather::WeatherKit> modules by factoring out shared
+code. In the unlikely event that you'd like to base your own weather or similar
+API wrapper module on it, look at the implementation of those modules for guidance.
 
 =head1 CONSTRUCTOR
 
@@ -66,7 +65,6 @@ It is more useful as a util module for the time and unit conversion functions.
         timeout => $timeout_sec?,
         agent   => $user_agent_string?,
         ua      => $lwp_ua?,
-        units   => $units?,
         error   => $die_or_return?,
         debug   => $debug?,
         output  => $output,
@@ -74,12 +72,11 @@ It is more useful as a util module for the time and unit conversion functions.
     );
 
 Creates a Weather::API::Base object. As explained, you'd normally use a module that
-inherits from this, but i base class sets these defaults:
+inherits from this, but the base class sets these defaults:
 
     (
         timeout => 30,
         agent   => "libwww-perl $package/$version",
-        units   => 'metric',
         error   => 'return',
         output  => 'json',
         scheme  => 'https',
@@ -111,19 +108,19 @@ These are to be used when subclassing.
 
 =head2 C<_get_output>
 
-    $self->_get_output(wantarray, $response);
+    $self->_get_output($response, wantarray);
 
-C<$response> should be an L<HTTP::Response> object, unless C<$self->{curl}> is true
+C<$response> should be an L<HTTP::Response> object, unless C<$self-E<gt>{curl}> is true
 in which case it should be a string. On C<wantarray> a Perl hash (or array) will be
-returned by decoding a JSON/XML response (if C<$self->{output}> is C<json/xml>) or
+returned by decoding a JSON/XML response (if C<$self-E<gt>{output}> is C<json/xml>) or
 just the decoded content as a value for the C<data> key otherwise.
 
 =head2 C<_get_ua>
 
     my $resp = $self->_get_ua($url);
 
-Will either use C<$self->{ua}> or create a new one and fetch the C<$url> with it.
-If the URL does not contain the scheme, it will be applied from C<$self->{scheme}>.
+Will either use C<$self-E<gt>{ua}> or create a new one and fetch the C<$url> with it.
+If the URL does not contain the scheme, it will be applied from C<$self-E<gt>{scheme}>.
 
 
 =head1 HELPER FUNCTIONS
@@ -138,7 +135,7 @@ Can convert from/to various units that are used in weather:
 
 =over 4
 
-=item * B<Wind:> kmh, mph, m/s, Bft, knot
+=item * B<Wind speed:> kph, mph, m/s, Bft, knot
 
 =item * B<Temp:> K, F, C
 
@@ -153,18 +150,20 @@ Use the above units as string parameters. Example:
   $result = convert_units('atm', 'mmHg', 1); # Will return 760 (mmHg per 1 atm)
 
 If you try to convert between non convertible units, the croak message will list
-the valid conversions from the 'from' units.
+the valid conversions from the 'from' units. For example C<convert_units('kph', 'mm', 10)>
+will croak with the speed units (kph, mph, m/s, Bft, knot) that are available to
+convert from kph.
 
-Note that the Beaufort scale (C<Bft>) is an empirical scale that is usually used
-as whole numbers (converting to a range of +/- 0.5 Bft in other units), but the
-convert function will actually give you the approximate floating point value based
-on an accepted empirical function.
+Note that the Beaufort scale (C<Bft>) is an empirical scale commonly used in whole
+numbers (converting to a range of +/- 0.5 Bft in other units), but the convert
+function will actually give you the approximate floating point value based on an
+accepted empirical function.
 
 =head2 C<ts_to_date>
 
     my $datetime = ts_to_date($timestamp, $utc?);
 
-There are many ways to convert unix timestams to human readable dates, but for
+There are many ways to convert unix timestamps to human readable dates, but for
 convenience you can use C<ts_to_date>, which is a very fast function that will
 return the format C<YYYY-MM-DD HH:mm:ss> in your local time zone, or
 C<YYYY-MM-DD HH:mm:ssZ> in UTC if the second argument is true.
