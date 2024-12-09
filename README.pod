@@ -168,6 +168,13 @@ convenience you can use C<ts_to_date>, which is a very fast function that will
 return the format C<YYYY-MM-DD HH:mm:ss> in your local time zone, or
 C<YYYY-MM-DD HH:mm:ssZ> in UTC if the second argument is true.
 
+=head2 C<ts_to_iso_date>
+
+    my $datetime = ts_to_iso_date($timestamp, $utc?);
+
+Same as C<ts_to_date> but returns a strict ISO date with the C<T> date/time
+separator.
+
 =head2 C<datetime_to_ts>
 
     my $ts = datetime_to_ts($datetime, $utc?);
